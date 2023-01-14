@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
+import { io } from '../../..';
 import { Order } from '../../models/Order';
 
 export async function createOrders(req: Request, res: Response){
   try {
     const { table, products } = req.body
 
-    const orders = await Order.create({ table, products })
+    const order = await Order.create({ table, products })
+    const orderDetails = await order.populate('products.product');
+    io.emit('order@new', orderDetails);
 
-    res.status(201).json(orders)
+    res.status(201).json(order)
   } catch(e) {
     console.log(e)
     res.sendStatus(500)
